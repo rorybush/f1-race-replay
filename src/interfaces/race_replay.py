@@ -466,8 +466,9 @@ class F1RaceReplayWindow(arcade.Window):
             self.frame_index = max(self.frame_index - 10.0, 0.0)
             self.race_controls_comp.flash_button('rewind')
         elif symbol == arcade.key.UP:
-            self.playback_speed *= 2.0
-            self.race_controls_comp.flash_button('speed_increase')
+            if self.playback_speed < 1024.0:
+                self.playback_speed *= 2.0
+                self.race_controls_comp.flash_button('speed_increase')
         elif symbol == arcade.key.DOWN:
             self.playback_speed = max(0.1, self.playback_speed / 2.0)
             self.race_controls_comp.flash_button('speed_decrease')
