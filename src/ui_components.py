@@ -261,7 +261,22 @@ class LeaderboardComponent(BaseComponent):
         leaderboard_y = window.height - 40
         arcade.Text("Leaderboard", self.x, leaderboard_y, arcade.color.WHITE, 20, bold=True, anchor_x="left", anchor_y="top").draw()
         self.rects = []
-        for i, (code, color, pos, progress_m) in enumerate(self.entries):
+
+        # Sort entries by lap number an distance progressed
+        # If any of the entries have lap > 1, then sort
+
+        if any(e[2].get("lap", 0) > 1 for e in self.entries):
+            new_entries = sorted(
+                self.entries,
+                key=lambda e: (
+                    -e[2].get("lap", 0),  # Descending lap number
+                    -e[2].get("dist")                 # Descending distance progressed
+                )
+            )
+        else:
+            new_entries = self.entries
+
+        for i, (code, color, pos, progress_m) in enumerate(new_entries):
             current_pos = i + 1
             top_y = leaderboard_y - 30 - ((current_pos - 1) * self.row_height)
             bottom_y = top_y - self.row_height
@@ -309,6 +324,11 @@ class LeaderboardComponent(BaseComponent):
 
                 arcade.draw_circle_filled(drs_dot_x, drs_dot_y, 4, drs_color)
 
+        # Add text at the bottom of the leaderboard during lap 1 to alert the user to potential mis-ordering
+        if new_entries[0][2].get("lap", 0) == 1:
+            arcade.Text("May be inaccurate during Lap 1",
+                        self.x, leaderboard_y - 30 - (len(new_entries) * self.row_height) - 20,
+                        arcade.color.YELLOW, 12, anchor_x="left", anchor_y="top").draw()
 
     def on_mouse_press(self, window, x: float, y: float, button: int, modifiers: int):
         for code, left, bottom, right, top in self.rects:
